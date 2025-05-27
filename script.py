@@ -225,7 +225,7 @@ def realtime_visualization():
 
     # 保存动画为GIF格式
     ani = FuncAnimation(fig, lambda i: None, frames=len(max_mass), interval=100)
-    ani.save('simulation.gif', writer='pillow', fps=10)
+    ani.save('simulation.mp4', writer='ffmpeg', fps=10)
     # 保存质量变化曲线图
     fig2, ax = plt.subplots(figsize=(10, 6))
     ax.plot(max_mass, color=colors[0], label='Max Mass')
