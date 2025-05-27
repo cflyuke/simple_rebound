@@ -12,7 +12,7 @@ import math
 import time
 
 # 导入我们的简化rebound包
-import simple_rebound as simple_rebound
+import simple_rebound
 
 # 设置随机种子
 seed = 42
