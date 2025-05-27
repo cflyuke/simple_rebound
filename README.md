@@ -1,4 +1,3 @@
-````markdown
 # Simple Rebound
 
 A simplified N-body simulation package based on the REBOUND framework.
@@ -9,7 +8,7 @@ To install in development mode:
 
 ```bash
 pip install -e .
-````
+```
 
 ## Usage
 
@@ -20,7 +19,10 @@ import simple_rebound
 sim = simple_rebound.Simulation()
 
 # Add particles and run simulation
-# ... (add your usage examples here)
+sim.add(...)
+sim.integrator = 'ias15' # leapfrog, whfast, mercurius
+sim.dt = ...
+sim.integrate(t_max = ...)
 ```
 
 ## Requirements
