@@ -10,6 +10,8 @@ from matplotlib.animation import FuncAnimation
 import random
 import math
 import time
+from moviepy import ImageSequenceClip
+import os
 
 # 导入我们的简化rebound包
 import simple_rebound
@@ -36,7 +38,7 @@ class Config():
         # 碰撞检测机制：direct(default), spatial
         self.collision_detection = 'direct'
         # 积分器类型：ias15(default), leapfrog, whfast, mercurius
-        self.integrator = "mercurius"
+        self.integrator = "ias15"
         # 重力计算机制：direct(default)，tree
         self.gravity_method = "direct"
         # 积分步长(s)
@@ -60,8 +62,8 @@ class Config():
         self.M_std = self.M_mean / 10 
 
         ## 二、实验配置
-        self.update_step = 86400 * 365 * 100  # 信息更新记录时间(s)
-        self.total_time = 86400 * 365 * 1000   # 总体时间(s)
+        self.update_step = 86400 * 365 * 50  # 信息更新记录时间(s)
+        self.total_time = 86400 * 365 * 5000   # 总体时间(s)
 
 
         
@@ -160,6 +162,16 @@ def realtime_visualization():
     max_mass = []
     min_mass = []
     particle_number = []
+    
+    # 为视频生成创建临时文件夹
+    temp_dir = "temp_frames"
+    output_dir = "result"
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    frame_files = []
+    
     while sim.t < total_time:
         # 积分一步
         sim.integrate(sim.t + update_step)
@@ -214,6 +226,11 @@ def realtime_visualization():
             # 重绘并确保帧率
             fig.canvas.draw()
             fig.canvas.flush_events()
+            
+            # 直接保存当前帧为图片
+            frame_file = os.path.join(temp_dir, f"frame_{step_count:04d}.png")
+            fig.savefig(frame_file, dpi=100, bbox_inches='tight')
+            frame_files.append(frame_file)
         
         # 如果粒子数太少就停止
         if sim.N <= 2:
@@ -223,18 +240,15 @@ def realtime_visualization():
     print(f"Simulation complete, final particle number: {sim.N-1}")
     plt.ioff()
 
-    # 保存动画为GIF格式
-    ani = FuncAnimation(fig, lambda i: None, frames=len(max_mass), interval=100)
-    ani.save('simulation.mp4', writer='ffmpeg', fps=10)
     # 保存质量变化曲线图
     fig2, ax = plt.subplots(figsize=(10, 6))
     ax.plot(max_mass, color=colors[0], label='Max Mass')
-    ax.plot(min_mass, color=colors[1], label='Min Mass')
+    ax.plot(min_mass, color=colors[2], label='Min Mass')
     ax.set_title('Mass Evolution Over Time')
     ax.set_xlabel('Time Step')
     ax.set_ylabel('Mass (kg)')
     ax.legend()
-    plt.savefig('mass_evolution.png')
+    plt.savefig(os.path.join(output_dir, 'mass_evolution.png'))
     plt.close(fig2)
 
     # 保存粒子数目变化图
@@ -244,27 +258,48 @@ def realtime_visualization():
     ax.set_xlabel('Time Step')
     ax.set_ylabel('Number of Particles')
     ax.legend()
-    plt.savefig('particle_number_evolution.png')
+    plt.savefig(os.path.join(output_dir, 'particle_number_evolution.png'))
     plt.close(fig3)
     
     # 绘制初始和最终质量分布对比
     plt.figure(figsize=(12, 6))
     plt.subplot(121)
-    plt.hist(initial_masses, bins=20, alpha=0.7, color=colors[3], label='Initial')
+    plt.hist(initial_masses, bins=20, alpha=0.7, color=colors[2], label='Initial')
     plt.title('Initial Mass Distribution')
     plt.xlabel('Mass (kg)')
     plt.ylabel('Count')
     
     plt.subplot(122)
     final_masses = [p['m'] for p in particles]
-    plt.hist(final_masses, bins=20, alpha=0.7, color=colors[4], label='Final')
+    plt.hist(final_masses, bins=20, alpha=0.7, color=colors[3], label='Final')
     plt.title('Final Mass Distribution')
     plt.xlabel('Mass (kg)')
     plt.ylabel('Count')
     
     plt.tight_layout()
-    plt.savefig('mass_distribution_comparison.png')
+    plt.savefig(os.path.join(output_dir, 'mass_distribution_comparison.png'))
     plt.show()
+
+    # 使用moviepy从已保存的帧创建视频
+    print("Generating MP4 video...")
+    if frame_files:
+        try:
+            # 使用moviepy创建视频
+            clip = ImageSequenceClip(frame_files, fps=10)
+            clip.write_videofile(os.path.join(output_dir, 'simulation.mp4'), codec='libx264')
+            print("Generation succeeded: simulation.mp4")
+            # 清理临时文件
+            for frame_file in frame_files:
+                if os.path.exists(frame_file):
+                    os.remove(frame_file)
+            if os.path.exists(temp_dir):
+                os.rmdir(temp_dir)
+            print("Temp dir has been cleaned")
+        except Exception as e:
+            print(f"Generation failed: {e}")
+    else:
+        print("No frame given.")
+
 
 def main():
     """主函数"""
