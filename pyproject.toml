@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=42", "wheel", "numpy"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simple_rebound"
+version = "0.1.0"
+authors = [
+    {name = "cflyuke"}
+]
+description = "A simplified N-body simulation package"
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "twine"]
