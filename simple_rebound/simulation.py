@@ -4,7 +4,7 @@ Simulation class for Simple Rebound - C backend only
 
 import numpy as np
 from .particle import Particle
-from .. import core
+from . import core
 
 class Simulation:
     """
