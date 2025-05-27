@@ -2,3 +2,4 @@
 simple_rebound/__pycache__/
 simple_rebound.egg-info/
 simple_rebound/*.so
+result/
