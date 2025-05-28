@@ -64,6 +64,7 @@ class Config():
         ## 二、实验配置
         self.update_step = 86400 * 365 * 50  # 信息更新记录时间(s)
         self.total_time = 86400 * 365 * 5000   # 总体时间(s)
+        self.target_fps = 10  #实时展示帧数
 
 
         
@@ -154,7 +155,7 @@ def realtime_visualization():
     # 模拟参数
     update_step = config.update_step
     total_time = config.total_time
-    target_fps = 10  # 目标帧率
+    target_fps = config.target_fps  # 目标帧率
     min_frame_time = 1.0 / target_fps  # 最小帧间隔(秒)
     
     step_count = 0
@@ -171,15 +172,15 @@ def realtime_visualization():
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     frame_files = []
-    
+    original_time = time.time()
     while sim.t < total_time:
         # 积分一步
         sim.integrate(sim.t + update_step)
         step_count += 1
         
         # 更新可视化前控制帧率
-        current_time = time.time()
-        elapsed = current_time - last_frame_time
+        current_frame_time = time.time()
+        elapsed = current_frame_time - last_frame_time
         if elapsed < min_frame_time:
             time.sleep(min_frame_time - elapsed)
         last_frame_time = time.time()
@@ -221,7 +222,8 @@ def realtime_visualization():
             
             # 更新时间显示
             current_time = sim.t / (86400 * 365)
-            time_text.set_text(f'Time: {current_time:.1f} years\nParticles: {sim.N-1}')
+            running_time = time.time() - original_time
+            time_text.set_text(f'Time: {current_time:.1f} years\nParticles: {sim.N-1}\nRunning time: {running_time:.1f}s')
             
             # 重绘并确保帧率
             fig.canvas.draw()
@@ -253,7 +255,7 @@ def realtime_visualization():
 
     # 保存粒子数目变化图
     fig3, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(particle_number, color=colors[2], label='Particle Number')
+    ax.plot(particle_number, color=colors[4], label='Particle Number')
     ax.set_title('Particle Number Evolution')
     ax.set_xlabel('Time Step')
     ax.set_ylabel('Number of Particles')
@@ -264,14 +266,14 @@ def realtime_visualization():
     # 绘制初始和最终质量分布对比
     plt.figure(figsize=(12, 6))
     plt.subplot(121)
-    plt.hist(initial_masses, bins=20, alpha=0.7, color=colors[2], label='Initial')
+    plt.hist(initial_masses, bins=20, alpha=0.7, color=colors[0], label='Initial')
     plt.title('Initial Mass Distribution')
     plt.xlabel('Mass (kg)')
     plt.ylabel('Count')
     
     plt.subplot(122)
     final_masses = [p['m'] for p in particles]
-    plt.hist(final_masses, bins=20, alpha=0.7, color=colors[3], label='Final')
+    plt.hist(final_masses, bins=20, alpha=0.7, color=colors[2], label='Final')
     plt.title('Final Mass Distribution')
     plt.xlabel('Mass (kg)')
     plt.ylabel('Count')
@@ -285,7 +287,7 @@ def realtime_visualization():
     if frame_files:
         try:
             # 使用moviepy创建视频
-            clip = ImageSequenceClip(frame_files, fps=10)
+            clip = ImageSequenceClip(frame_files, fps=target_fps)
             clip.write_videofile(os.path.join(output_dir, 'simulation.mp4'), codec='libx264')
             print("Generation succeeded: simulation.mp4")
             # 清理临时文件

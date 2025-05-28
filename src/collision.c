@@ -319,7 +319,7 @@ void check_collisions_spatial(Simulation* sim) {
     
     // 对于少量粒子，直接使用O(N²)方法更高效
     if (sim->N < 50) {
-        check_collisions(sim);
+        check_collisions_direct(sim);
         return;
     }
     
