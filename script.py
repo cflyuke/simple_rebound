@@ -41,12 +41,14 @@ class Config():
         self.integrator = "ias15"
         # 重力计算机制：direct(default)，tree
         self.gravity_method = "direct"
+        # Barnes-hut tree 开角大小
+        self.theta = 1.0
         # 积分步长(s)
         self.dt = 86400.0
 
         self.R_mean = 1.5e11  # 轨道半径(1Au)
         self.M_star = 1.989e30 # 恒星质量
-        self.r = 6.96e8 #恒星半径
+        self.r = 6.96e8 # 恒星半径
         self.N_dust = 100 # 总星子数
         self.rho = 3000  # 密度 kg/m³
         self.M_total = 6e24  # 星子总质量（这里是地球）
@@ -64,7 +66,7 @@ class Config():
         ## 二、实验配置
         self.update_step = 86400 * 365 * 50  # 信息更新记录时间(s)
         self.total_time = 86400 * 365 * 5000   # 总体时间(s)
-        self.target_fps = 10  #实时展示帧数
+        self.target_fps = 10  # 实时展示帧数
 
 
         
@@ -83,6 +85,7 @@ def create_terrestrial_system(config):
     sim.integrator = config.integrator
     sim.gravity_method = config.gravity_method
     sim.dt = config.dt
+    sim.theta = config.theta
     R_mean = config.R_mean
     M_star = config.M_star
     r = config.r

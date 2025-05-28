@@ -29,7 +29,10 @@ class CustomBuildExt(build_ext):
     def build_extensions(self):
         if os.name == 'nt':  # Windows
             for ext in self.extensions:
-                ext.extra_compile_args = ['-O2']
+                ext.extra_compile_args = ['/O2', '/utf-8']  # /O2 = Maximize speed optimization
+        else:
+            for ext in self.extensions:
+                ext.extra_compile_args = ['-O3']  # -O3 = Aggressive optimization
         super().build_extensions()
 
 setup(

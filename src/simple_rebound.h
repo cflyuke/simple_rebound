@@ -10,6 +10,11 @@
 #define G_DEFAULT 6.67430e-11
 #define MAX_PARTICLES 10000
 
+// 定义 M_PI 常量（Windows MSVC 可能没有定义）
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #define MAX(a, b) ((a) < (b) ? (b) : (a))
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 
@@ -26,7 +31,7 @@ typedef struct {
     double m;           // 质量
     double r;           // 半径
     int id;             // 粒子ID
-}Particle;
+} Particle;
 
 // 积分器类型
 typedef enum {
