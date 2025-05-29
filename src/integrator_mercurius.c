@@ -7,8 +7,8 @@ void mercurius_init(Simulation* sim) {
     
     // 设置默认参数
     sim->ri_mercurius.hill_switch_factor = 3.0;    // 希尔半径切换因子
-    sim->ri_mercurius.whfast_dt_factor = 1.0;      // WHFast时间步长因子
-    sim->ri_mercurius.ias15_dt_factor = 0.1;       // IAS15时间步长因子（更小的步长）
+    sim->ri_mercurius.step_switch_factor = 3.0;    // 步长相对距离切换半径
+    sim->ri_mercurius.ias15_dt = 1e-12;       // IAS15时间步长（更小的步长）
     sim->ri_mercurius.current_integrator = 0;      // 默认使用WHFast
     sim->ri_mercurius.original_dt = sim->dt;       // 保存原始时间步长
     
@@ -114,9 +114,15 @@ int mercurius_check_close_encounters(Simulation* sim) {
                 // 计算希尔半径
                 double hill_radius = mercurius_calculate_hill_radius(p1, p2, central_mass);
                 double switch_distance = sim->ri_mercurius.hill_switch_factor * hill_radius;
+
+                double vx = p1->vx - p2->vx;
+                double vy = p1->vy - p2->vy;
+                double vz = p1->vz - p2->vz;
+                double v = sqrt(vx*vx + vy*vy + vz*vz);
+                double step_distance = v * sim->dt * sim->ri_mercurius.step_switch_factor;
                 
                 // 检查是否发生近距离遭遇
-                if (distance < switch_distance) {
+                if (distance < MIN(switch_distance, step_distance)) {
                     sim->ri_mercurius.close_encounter_flags[pair_index] = 1;
                     has_close_encounter = 1;
                 } else {
@@ -149,7 +155,7 @@ void integrator_mercurius(Simulation* sim) {
         if (sim->ri_mercurius.current_integrator != 1) {
             // 切换到IAS15
             sim->ri_mercurius.current_integrator = 1;
-            sim->dt = sim->ri_mercurius.original_dt * sim->ri_mercurius.ias15_dt_factor;
+            sim->dt = sim->ri_mercurius.ias15_dt;
             
             // 确保WHFast同步（如果之前在使用）
             if (sim->ri_whfast.is_synchronized == 0) {
@@ -165,7 +171,7 @@ void integrator_mercurius(Simulation* sim) {
         if (sim->ri_mercurius.current_integrator != 0) {
             // 切换到WHFast
             sim->ri_mercurius.current_integrator = 0;
-            sim->dt = sim->ri_mercurius.original_dt * sim->ri_mercurius.whfast_dt_factor;
+            sim->dt = sim->ri_mercurius.original_dt;
         }
         
         // 使用WHFast积分器

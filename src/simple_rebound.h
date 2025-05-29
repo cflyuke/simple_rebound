@@ -129,8 +129,8 @@ typedef struct {
 // Mercurius积分器结构
 typedef struct {
     double hill_switch_factor;      // 希尔半径切换因子，默认为3.0
-    double whfast_dt_factor;        // WHFast时间步长因子，默认为1.0
-    double ias15_dt_factor;         // IAS15时间步长因子，默认为0.1
+    double step_switch_factor;      // 相对距离切换因子，默认为3.0
+    double ias15_dt;         // IAS15时间步长因子，默认为1e-12
     double* distances;              // 粒子间距离缓存
     int* close_encounter_flags;     // 近距离遭遇标志
     int N_allocated;                // 已分配大小

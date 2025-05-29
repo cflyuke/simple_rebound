@@ -55,8 +55,8 @@ Simulation* sim_create(void) {
     // 初始化Mercurius积分器
     memset(&sim->ri_mercurius, 0, sizeof(Mercurius_integrator));
     sim->ri_mercurius.hill_switch_factor = 3.0;
-    sim->ri_mercurius.whfast_dt_factor = 1.0;
-    sim->ri_mercurius.ias15_dt_factor = 0.1;
+    sim->ri_mercurius.step_switch_factor = 3.0;
+    sim->ri_mercurius.ias15_dt = 1e-12;
     sim->ri_mercurius.current_integrator = 0;
     sim->ri_mercurius.original_dt = sim->dt;
     sim->ri_mercurius.distances = NULL;
